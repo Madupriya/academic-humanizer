@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Page Configuration (Academic & Clean Theme)
+# 1. Page Configuration
 st.set_page_config(
     page_title="Academic AI Humanizer",
     page_icon="🎓",
@@ -9,115 +9,172 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling (CSS) for Academic UI
+# 2. Advanced Custom CSS & HTML Front-End Styling
 st.markdown("""
 <style>
-    .main-title {
-        font-size: 2.3rem;
-        font-weight: 700;
-        color: #1E3A8A;
+    /* Global Styles & Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Main Background Accent */
+    .stApp {
+        background: radial-gradient(circle at top left, #0f172a, #020617);
+    }
+
+    /* Main Title with Vibrant Gradient */
+    .hero-title {
+        font-size: 2.6rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
         margin-bottom: 0.2rem;
+        letter-spacing: -0.5px;
     }
-    .sub-title {
+
+    .hero-subtitle {
         font-size: 1.05rem;
-        color: #4B5563;
+        color: #94A3B8;
         text-align: center;
-        margin-bottom: 1.8rem;
+        margin-bottom: 2rem;
+        font-weight: 400;
     }
+
+    /* Glassmorphism Card Wrapper */
+    .custom-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1rem;
+    }
+
+    /* Primary Action Button Customization */
     .stButton>button {
         width: 100%;
-        background-color: #2563EB;
-        color: white;
+        background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+        color: #FFFFFF;
         font-size: 1.1rem;
         font-weight: 600;
-        padding: 0.6rem;
-        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
         border: none;
+        box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+        transition: all 0.3s ease;
     }
+
     .stButton>button:hover {
-        background-color: #1D4ED8;
-        color: white;
+        background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+        box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.6);
+        transform: translateY(-2px);
+        color: #FFFFFF;
     }
-    .warning-box {
-        background-color: #FEF3C7;
-        color: #92400E;
-        padding: 0.9rem;
-        border-radius: 8px;
-        border-left: 5px solid #F59E0B;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+
+    /* Input & Textarea Customization */
+    .stTextArea textarea {
+        background-color: #0F172A !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
+        color: #F8FAFC !important;
+        font-size: 0.95rem !important;
+    }
+
+    .stTextArea textarea:focus {
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
+    }
+
+    /* Sidebar Aesthetic Customization */
+    [data-testid="stSidebar"] {
+        background-color: #090D16 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Custom Warning/Info Badges */
+    .limit-badge {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #FBBF24;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        margin-top: 0.8rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Sidebar Settings & API Key Management
-st.sidebar.title("🎓 Academic Hub")
+# 3. Sidebar Setup
+st.sidebar.markdown("<h2 style='color: #F8FAFC;'>🎓 Academic Hub</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
-# User Custom API Key Input
-user_api_key = st.sidebar.text_input("🔑 ඔබේ Gemini API Key එක ඇතුළත් කරන්න (Optional):", type="password")
+user_api_key = st.sidebar.text_input("🔑 ඔබේ Gemini API Key එක (Optional):", type="password")
 
-# Key & Limit Selection Logic
 if user_api_key.strip():
     active_api_key = user_api_key.strip()
     is_custom_key = True
-    st.sidebar.success("✅ ඔබේම API Key එක සක්‍රීයයි! (Unlimited Words)")
+    st.sidebar.success("⚡ ඔබේම API Key එක සක්‍රීයයි (Unlimited Words)")
 else:
-    # Uses Developer's System Key from Streamlit Secrets
     if "GEMINI_API_KEY" in st.secrets:
         active_api_key = st.secrets["GEMINI_API_KEY"]
         is_custom_key = False
-        st.sidebar.info("ℹ️ System API Key එක සක්‍රීයයි (වචන 1,000 සීමාවක් සහිතව)")
+        st.sidebar.info("ℹ️ System Key එක සක්‍රීයයි (වචන 1,000 සීමාව)")
     else:
         active_api_key = None
         is_custom_key = False
-        st.sidebar.warning("⚠️ System Key එකක් සෙට් කර නැත. කරුණාකර API Key එකක් ඇතුළත් කරන්න.")
+        st.sidebar.warning("⚠️ System Key එක සෙට් කර නැත. Key එකක් ඇතුළත් කරන්න.")
 
-# Guide to Get Free API Key
-with st.sidebar.expander("❓ නොමිලේ API Key එකක් සාදාගන්නේ කෙසේද?"):
+with st.sidebar.expander("❓ නොමිලේ API Key එකක් හදාගන්නේ කොහොමද?"):
     st.markdown("""
     1. **[Google AI Studio](https://aistudio.google.com/)** වෙත යන්න.
-    2. ඔබේ Google Account එකෙන් Sign In වෙන්න.
-    3. **"Get API key"** ක්ලික් කර **"Create API key"** ලබාගන්න.
-    4. ලැබුණු Key එක මෙහි Sidebar එකේ ඇති කොටුවට Paste කරන්න!
+    2. Google Account එකෙන් Sign In වෙන්න.
+    3. **"Get API key"** > **"Create API key"** ලබාගන්න.
+    4. Key එක මෙහි Sidebar එකට Paste කරන්න!
     """)
 
 st.sidebar.markdown("---")
-st.sidebar.caption("📌 Tip: Assignment / Thesis වල AI detection අඩු කිරීමට මෙය උපකාරී වේ.")
+st.sidebar.caption("📌 Tip: Assignments & Research Papers වල AI pattern අයින් කිරීමට උපකාරී වේ.")
 
-# 3. Main Application Interface
-st.markdown("<div class='main-title'>🎓 Academic AI Humanizer & Writing Assistant</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-header'>AI මගින් ලියන ලද ලිපි ස්වාභාවික, Academic සහ Human Tone එකකට පරිවර්තනය කරන්න</div>", unsafe_allow_html=True)
+# 4. Hero Header Section
+st.markdown("<div class='hero-title'>Academic AI Humanizer & Writing Assistant</div>", unsafe_allow_html=True)
+st.markdown("<div class='hero-subtitle'>AI මගින් ලියන ලද ලිපි Natural, Academic සහ Genuine Human Tone එකකට පරිවර්තනය කරන්න</div>", unsafe_allow_html=True)
 
+# 5. Main Application Body with Columns
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📝 Input AI Content")
+    st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #F8FAFC; margin-bottom: 1rem;'>📝 Input AI Content</h3>", unsafe_allow_html=True)
     
     academic_style = st.selectbox(
         "🎯 Writing Style එක තෝරන්න:",
         ["Academic / Research Paper", "University Student Assignment", "Formal Essay", "Natural & Simple English"]
     )
     
-    input_text = st.text_area("මෙහි ඔබේ AI Text එක Paste කරන්න:", height=280, placeholder="Enter text here...")
+    input_text = st.text_area("මෙහි ඔබේ AI Text එක Paste කරන්න:", height=260, placeholder="Type or paste your AI-generated text here...")
     
-    # Calculate Word Count
     words = input_text.strip().split() if input_text.strip() else []
     word_count = len(words)
     
-    # Check Word Limit
     if not is_custom_key:
         st.caption(f"📊 වචන ගණන: **{word_count} / 1000** (Default System Key)")
         if word_count > 1000:
-            st.markdown("<div class='warning-box'>⚠️ **වචන 1000 සීමාව පැන ඇත!** System Key එකෙන් වචන 1000ක් දක්වා පමණක් Humanize කළ හැක. කරුණාකර Sidebar එකෙන් ඔබේම නොමිලේ API Key එකක් එක් කරන්න.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='limit-badge'>⚠️ **වචන 1000 සීමාව පැන ඇත!** System Key එකෙන් වචන 1000ක් දක්වා පමණක් Humanize කළ හැක. Sidebar එකෙන් ඔබේම API Key එකක් ඇතුළත් කරන්න.</div>", unsafe_allow_html=True)
     else:
-        st.caption(f"📊 වචන ගණන: **{word_count}** (Unlimited Mode - Custom API Key)")
+        st.caption(f"📊 වචන ගණන: **{word_count}** (Unlimited Mode - Custom Key)")
 
-    humanize_btn = st.button("✨ Humanize Text")
+    humanize_btn = st.button("✨ Humanize Text Now")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
-    st.subheader("✨ Humanized Academic Result")
+    st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #F8FAFC; margin-bottom: 1rem;'>✨ Humanized Output</h3>", unsafe_allow_html=True)
     
     if humanize_btn:
         if not input_text.strip():
@@ -127,16 +184,14 @@ with col2:
         elif not active_api_key:
             st.error("API Key එකක් නොමැත. කරුණාකර Sidebar එකෙන් API Key එකක් ලබාදෙන්න.")
         else:
-            with st.spinner("AI Text එක Humanize කරමින් පවතී... කරුණාකර රැඳී සිටින්න."):
+            with st.spinner("Text එක Humanize වෙමින් පවතී... මොහොතක් රැඳී සිටින්න."):
                 try:
                     genai.configure(api_key=active_api_key)
-                    
-                    # Using Gemini 1.5 Flash Model
                     model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     prompt = f"""
                     You are an expert academic writing assistant and humanizer.
-                    Your task is to rewrite the following text so that it sounds 100% natural, human-written, and suitable for academic/university work.
+                    Rewrite the following text so that it sounds 100% natural, human-written, and suitable for university work.
                     
                     Instructions:
                     - Target Style: {academic_style}
@@ -149,23 +204,22 @@ with col2:
                     """
                     
                     response = model.generate_content(prompt)
-                    result_text = response.text
-                    
-                    st.text_area("Humanized Output:", value=result_text, height=280)
+                    st.text_area("Humanized Result:", value=response.text, height=295)
                     st.success("✅ සාර්ථකව Humanize කර අවසන්!")
                     
                 except Exception as e:
                     st.error(f"Error එකක් සිදුවිය: {e}")
+    else:
+        st.info("Humanized Text එක මෙතනින් ලබාගැනීමට වම් පැත්තේ බටන් එක ඔබන්න.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# 4. Video Tutorial / Guide Section at the Bottom
+# 6. Video Tutorial Section at Bottom
 st.markdown("---")
-st.subheader("🎬 App එක සහ API Key එක පාවිච්චි කරන හැටි (Video Tutorial)")
-st.write("මෙම App එකෙන් නිවැරදිව ප්‍රයෝජන ගන්නා ආකාරය පහත Video එකෙන් නරඹන්න:")
+st.markdown("<h3 style='color: #F8FAFC;'>🎬 Guide & Video Tutorial</h3>", unsafe_allow_html=True)
+st.write("App එක නිවැරදිව පාවිච්චි කරන ආකාරය පහත Video එකෙන් බලන්න:")
 
-# Video Container (You can replace this URL with your AI Video URL later)
-sample_video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+sample_video_url = "https://www.youtube.com/watch?v=dQw4w9XcQ"
 st.video(sample_video_url)
 
 # Footer
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #6B7280; font-size: 0.9rem;'>🎓 Academic AI Humanizer | Designed for University Students & Researchers</p>", unsafe_allow_html=True)
+st.markdown("<br><p style='text-align: center; color: #64748B; font-size: 0.85rem;'>🎓 Academic AI Humanizer | Designed for University Students & Researchers</p>", unsafe_allow_html=True)
