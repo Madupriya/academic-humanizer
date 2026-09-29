@@ -179,7 +179,6 @@ with col2:
             with st.spinner("Humanizing your text... Please wait a moment."):
                 try:
                     genai.configure(api_key=active_api_key)
-                    model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     prompt = f"""
                     You are an expert academic writing editor and humanizer.
@@ -195,7 +194,14 @@ with col2:
                     {input_text}
                     """
                     
-                    response = model.generate_content(prompt)
+                    # Robust Model Call with Fallback
+                    try:
+                        model = genai.GenerativeModel('gemini-2.0-flash')
+                        response = model.generate_content(prompt)
+                    except Exception:
+                        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                        response = model.generate_content(prompt)
+                        
                     st.text_area("Humanized Result:", value=response.text, height=295)
                     st.success("✅ Text successfully humanized!")
                     
@@ -210,7 +216,7 @@ st.markdown("---")
 st.markdown("<h3 style='color: #F8FAFC;'>🎬 User Guide & Video Tutorial</h3>", unsafe_allow_html=True)
 st.write("Watch the video below to learn how to get your free API key and get the best results:")
 
-sample_video_url = "https://www.youtube.com/watch?v=dQw4w9XcQ"
+sample_video_url = "https://www.youtube.com/watch?v=1LrSwbmFPSs&list=RDR2X5_PWVoJ4&index=14"
 st.video(sample_video_url)
 
 # Footer
